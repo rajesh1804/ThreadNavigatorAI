@@ -7,6 +7,7 @@ from sentence_transformers import SentenceTransformer
 from langgraph.graph import StateGraph, END 
 from openai import OpenAI
 from tenacity import retry, stop_after_attempt, wait_fixed
+import time
 
 # Load API keys
 load_dotenv()
@@ -45,7 +46,7 @@ def retrieve_similar_posts(user_query, thread_id, top_k=5):
     print(f"🔍 Retrieved {len(posts)} similar posts from thread {thread_id}.")
     return "\n".join(posts)
 
-# ========== STEP 2: LLM call to generate TL;DR ==========
+# ========== STEP 2: LLM call with retry ==========
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
 def call_openrouter_llm(prompt):
     response = llm_client.chat.completions.create(
@@ -55,7 +56,7 @@ def call_openrouter_llm(prompt):
     )
     return response.choices[0].message.content.strip()
 
-# ========== STEP 3: Agent Function ==========
+# ========== STEP 3: Agents ==========
 def summarizer_agent(state):
     thread_id = state["thread_id"]
     user_query = state["user_query"]
@@ -70,12 +71,9 @@ Summarize this in 3 bullet points."""
 
     summary = call_openrouter_llm(prompt)
 
-    # Return all needed keys for next agent (including inputs)
     return {
         **state,
         "summary": summary,
-        # "thread_id": thread_id,
-        # "user_query": user_query
     }
 
 def moderator_agent(state: Dict) -> Dict:
@@ -84,7 +82,6 @@ def moderator_agent(state: Dict) -> Dict:
 
     print(f"\n🛡️ Moderator Agent triggered for Thread ID: {thread_id}")
 
-    # Retrieve the same context
     context = retrieve_similar_posts(user_query, thread_id)
 
     prompt = f"""You are a Reddit thread moderation assistant.
@@ -95,17 +92,13 @@ Your job:
 - Identify any irrelevant or off-topic messages.
 - If all is clean, say "✅ All good. No toxic content."
 
-Respond with a concise moderation report.
-"""
+Respond with a concise moderation report."""
 
     report = call_openrouter_llm(prompt)
-    # Return previous state + new key
+
     return {
         **state,
         "moderation_report": report,
-        # "thread_id": thread_id,
-        # "user_query": user_query,
-        # "summary": state["summary"]
     }
 
 def reply_assistant_agent(state):
@@ -126,15 +119,22 @@ Based on this, generate a helpful, friendly, and non-toxic Reddit-style reply th
 
     reply = call_openrouter_llm(prompt)
 
-    # Return full state + new key
     return {
         **state,
         "reply_suggestion": reply
     }
 
-
 # ========== STEP 4: LangGraph Orchestration ==========
-def run_graph(thread_id, user_query):
+
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(5))
+def safe_invoke(graph, input_state):
+    return graph.invoke(input_state)
+
+def run_graph(thread_id, user_query, verbose=False):
+    # Optional: check Weaviate connectivity before graph starts
+    if not weaviate_client.is_ready():
+        raise RuntimeError("Weaviate cluster not ready. Try again in a few seconds.")
+
     builder = StateGraph(schema={
         "thread_id": str,
         "user_query": str,
@@ -153,5 +153,15 @@ def run_graph(thread_id, user_query):
     builder.add_edge("reply_assistant", END)
 
     graph = builder.compile()
-    result = graph.invoke({"thread_id": thread_id, "user_query": user_query})
-    return result
+
+    try:
+        start = time.time()
+        result = safe_invoke(graph, {"thread_id": thread_id, "user_query": user_query})
+        latency = round(time.time() - start, 2)
+        result["latency"] = latency
+        if verbose:
+            print("🧪 Final Graph Output:")
+            print(result)
+        return result
+    except Exception as e:
+        raise RuntimeError(f"❌ Agent workflow failed: {str(e)}")
