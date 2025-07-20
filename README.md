@@ -2,7 +2,7 @@
 title: "ThreadNavigatorAI"
 emoji: "🧵"
 colorFrom: "gray"
-colorTo: "violet"
+colorTo: "indigo"
 sdk: streamlit
 sdk_version: "1.33.0"
 app_file: app.py
