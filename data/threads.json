@@ -1,0 +1,43 @@
+[
+  {
+    "thread_id": "thread_001",
+    "posts": [
+      { "author": "op", "text": "Title: Apple's new M4 chip benchmarks just leaked." },
+      { "author": "op", "text": "Seems like a huge leap over the M3, especially on GPU performance." },
+      { "author": "skeptic42", "text": "Can we trust Geekbench scores though?" },
+      { "author": "battery_user", "text": "Any info on battery life gains?" },
+      { "author": "budget_buyer", "text": "Hoping MacBook Air prices stay the same 😅" },
+      { "author": "fanboy99", "text": "M4 Ultra incoming 🔥🔥" }
+    ]
+  },
+  {
+    "thread_id": "thread_002",
+    "posts": [
+      { "author": "ai_enthusiast", "text": "Gemini just crushed ChatGPT in math reasoning. Google's back baby!" },
+      { "author": "gpt_fan", "text": "Oh cool, one contrived benchmark and suddenly ChatGPT is obsolete?" },
+      { "author": "neutral_mod", "text": "Guys, let's focus on constructive comparisons." },
+      { "author": "gemini_user", "text": "I switched last week. Gemini actually *explains* things better in some STEM cases." },
+      { "author": "sarcastic_troll", "text": "Yeah, and my toaster beat GPT in common sense." }
+    ]
+  },
+  {
+    "thread_id": "thread_003",
+    "posts": [
+      { "author": "student_debt", "text": "Finally, a new round of student loan forgiveness is here!" },
+      { "author": "taxpayer1", "text": "Awesome. I didn’t go to college, but now I get to pay for yours. Thanks." },
+      { "author": "grad_supporter", "text": "It's not about freeloading — it's about fixing a predatory system." },
+      { "author": "offtopic_bot", "text": "btw anyone else here use Rocket Money to track loans?" },
+      { "author": "historian42", "text": "We've bailed out banks, airlines, even carmakers. Why not students?" }
+    ]
+  },
+  {
+    "thread_id": "thread_004",
+    "posts": [
+      { "author": "vr_dev", "text": "Just tried Apple Vision Pro. Mixed feelings tbh." },
+      { "author": "apple_fanboy", "text": "If you can't see the future in this, you're blind." },
+      { "author": "meta_user", "text": "It's a ski-goggle meme machine. Pass." },
+      { "author": "developerX", "text": "It's cool tech, but $3499 is way too high unless you're a dev or demo shop." },
+      { "author": "offtopic_andy", "text": "Can someone explain how this compares to Steam Deck?" }
+    ]
+  }
+]
